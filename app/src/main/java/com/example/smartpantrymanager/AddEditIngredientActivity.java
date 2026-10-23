@@ -8,14 +8,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.smartpantrymanager.data.AppDatabase;
+import com.example.smartpantrymanager.data.PantryItem;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddEditIngredientActivity extends AppCompatActivity {
 
     private EditText editName, editQuantity, editUnit, editExpiry;
     private Button buttonSave;
+
+    // runs database work in the background
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,30 +39,58 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Only continue if every check passes
                 if (validateInput()) {
-                    Toast.makeText(AddEditIngredientActivity.this,
-                            "Input is valid", Toast.LENGTH_SHORT).show();
+                    saveIngredient();
                 }
             }
         });
     }
 
-    // Checks each box. Returns true only if everything is OK.
+    // reads the boxes and saves a new item in the database
+    private void saveIngredient() {
+        String name = editName.getText().toString().trim();
+        double quantity = Double.parseDouble(editQuantity.getText().toString().trim());
+        String unit = editUnit.getText().toString().trim();
+        String expiry = editExpiry.getText().toString().trim();
+
+        // expiry is optional, so save null if it is empty
+        String expiryToSave = expiry.isEmpty() ? null : expiry;
+
+        PantryItem item = new PantryItem(name, quantity, unit, expiryToSave);
+
+        // database work must not run on the main thread
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                AppDatabase.getInstance(AddEditIngredientActivity.this)
+                        .pantryItemDao().insert(item);
+
+                // go back to the main thread to update the screen
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddEditIngredientActivity.this,
+                                "Ingredient saved", Toast.LENGTH_SHORT).show();
+                        finish(); // closes the form and returns to the pantry screen
+                    }
+                });
+            }
+        });
+    }
+
+    // checks every box, returns true only if all are filled
     private boolean validateInput() {
         String name = editName.getText().toString().trim();
         String quantityText = editQuantity.getText().toString().trim();
         String unit = editUnit.getText().toString().trim();
         String expiry = editExpiry.getText().toString().trim();
 
-        // 1. Name must not be empty
         if (name.isEmpty()) {
             editName.setError("Please enter an ingredient name");
             editName.requestFocus();
             return false;
         }
 
-        // 2. Quantity must be a number greater than 0
         if (quantityText.isEmpty()) {
             editQuantity.setError("Please enter a quantity");
             editQuantity.requestFocus();
@@ -74,14 +110,12 @@ public class AddEditIngredientActivity extends AppCompatActivity {
             return false;
         }
 
-        // 3. Unit must not be empty
         if (unit.isEmpty()) {
             editUnit.setError("Please enter a unit (e.g. g, ml, pcs)");
             editUnit.requestFocus();
             return false;
         }
 
-        // 4. Expiry is optional, but if typed it must look like dd-MM-yyyy
         if (!expiry.isEmpty()) {
             SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
             format.setLenient(false);
