@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.smartpantrymanager.data.AppDatabase;
 import com.example.smartpantrymanager.data.PantryItem;
+import com.example.smartpantrymanager.data.RecipeSeeder;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -52,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AddEditIngredientActivity.class);
                 startActivity(intent);
+            }
+        });
+
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                RecipeSeeder.seedIfEmpty(AppDatabase.getInstance(MainActivity.this));
             }
         });
     }
