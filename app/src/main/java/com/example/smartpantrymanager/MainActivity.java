@@ -36,6 +36,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerPantry.setAdapter(adapter);
 
 
+        adapter.setOnItemClickListener(new PantryAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(PantryItem item) {
+                Intent intent = new Intent(MainActivity.this, AddEditIngredientActivity.class);
+                intent.putExtra("itemId", item.getId());
+                startActivity(intent);
+            }
+        });
+
+
         Button buttonAdd = findViewById(R.id.buttonAddIngredient);
         buttonAdd.setOnClickListener(new View.OnClickListener() {
             @Override

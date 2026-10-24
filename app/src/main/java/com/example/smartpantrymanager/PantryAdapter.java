@@ -15,8 +15,17 @@ import java.util.List;
 
 public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryViewHolder> {
 
-    // the ingredients shown in the list
+    // MainActivity uses this to find out which row was tapped
+    public interface OnItemClickListener {
+        void onItemClick(PantryItem item);
+    }
+
     private List<PantryItem> items = new ArrayList<>();
+    private OnItemClickListener listener;
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     // swap in new data and refresh the list
     public void setItems(List<PantryItem> newItems) {
@@ -33,7 +42,7 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
         return new PantryViewHolder(view);
     }
 
-    // fills a row with the data of one ingredient
+    // put one ingredient's details into a row
     @Override
     public void onBindViewHolder(@NonNull PantryViewHolder holder, int position) {
         PantryItem item = items.get(position);
@@ -41,22 +50,32 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
         holder.textName.setText(item.getName());
         holder.textQuantity.setText(item.getQuantity() + " " + item.getUnit());
 
-        // only show the expiry line if the user entered a date
+        // only show expiry if the user entered one
         if (item.getExpiryDate() != null) {
             holder.textExpiry.setText("Expires: " + item.getExpiryDate());
             holder.textExpiry.setVisibility(View.VISIBLE);
         } else {
             holder.textExpiry.setVisibility(View.GONE);
         }
+
+        // tell MainActivity when this row is tapped
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(item);
+                }
+            }
+        });
     }
 
-    // tells the list how many rows there are
+    // how many rows
     @Override
     public int getItemCount() {
         return items.size();
     }
 
-    // holds the 3 text boxes of one row
+    // holds the 3 text boxes for one row
     static class PantryViewHolder extends RecyclerView.ViewHolder {
         TextView textName, textQuantity, textExpiry;
 

@@ -20,10 +20,13 @@ import java.util.concurrent.Executors;
 public class AddEditIngredientActivity extends AppCompatActivity {
 
     private EditText editName, editQuantity, editUnit, editExpiry;
-    private Button buttonSave;
+    private Button buttonSave, buttonDelete;
 
-    // runs database work in the background
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    // -1 means we are adding a new item
+    private int itemId = -1;
+    private PantryItem currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,15 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         editUnit = findViewById(R.id.editUnit);
         editExpiry = findViewById(R.id.editExpiry);
         buttonSave = findViewById(R.id.buttonSave);
+        buttonDelete = findViewById(R.id.buttonDelete);
+
+        // check if MainActivity sent us an id
+        itemId = getIntent().getIntExtra("itemId", -1);
+        if (itemId != -1) {
+            setTitle("Edit Ingredient");
+            buttonDelete.setVisibility(View.VISIBLE);
+            loadItem();
+        }
 
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,9 +56,41 @@ public class AddEditIngredientActivity extends AppCompatActivity {
                 }
             }
         });
+
+        buttonDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteIngredient();
+            }
+        });
     }
 
-    // reads the boxes and saves a new item in the database
+    // gets the item from the database and fills the boxes
+    private void loadItem() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                currentItem = AppDatabase.getInstance(AddEditIngredientActivity.this)
+                        .pantryItemDao().getItemById(itemId);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (currentItem != null) {
+                            editName.setText(currentItem.getName());
+                            editQuantity.setText(String.valueOf(currentItem.getQuantity()));
+                            editUnit.setText(currentItem.getUnit());
+                            if (currentItem.getExpiryDate() != null) {
+                                editExpiry.setText(currentItem.getExpiryDate());
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    // adds a new item or updates the one being edited
     private void saveIngredient() {
         String name = editName.getText().toString().trim();
         double quantity = Double.parseDouble(editQuantity.getText().toString().trim());
@@ -56,29 +100,59 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         // expiry is optional, so save null if it is empty
         String expiryToSave = expiry.isEmpty() ? null : expiry;
 
-        PantryItem item = new PantryItem(name, quantity, unit, expiryToSave);
-
-        // database work must not run on the main thread
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                AppDatabase.getInstance(AddEditIngredientActivity.this)
-                        .pantryItemDao().insert(item);
+                AppDatabase db = AppDatabase.getInstance(AddEditIngredientActivity.this);
 
-                // go back to the main thread to update the screen
+                if (itemId == -1) {
+                    // new item
+                    db.pantryItemDao().insert(new PantryItem(name, quantity, unit, expiryToSave));
+                } else {
+                    // existing item: change its values and update
+                    currentItem.setName(name);
+                    currentItem.setQuantity(quantity);
+                    currentItem.setUnit(unit);
+                    currentItem.setExpiryDate(expiryToSave);
+                    db.pantryItemDao().update(currentItem);
+                }
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(AddEditIngredientActivity.this,
                                 "Ingredient saved", Toast.LENGTH_SHORT).show();
-                        finish(); // closes the form and returns to the pantry screen
+                        finish();
                     }
                 });
             }
         });
     }
 
-    // checks every box, returns true only if all are filled
+    // removes the item being edited
+    private void deleteIngredient() {
+        if (currentItem == null) {
+            return;
+        }
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                AppDatabase.getInstance(AddEditIngredientActivity.this)
+                        .pantryItemDao().delete(currentItem);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddEditIngredientActivity.this,
+                                "Ingredient deleted", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
+            }
+        });
+    }
+
+
     private boolean validateInput() {
         String name = editName.getText().toString().trim();
         String quantityText = editQuantity.getText().toString().trim();
