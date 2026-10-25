@@ -4,15 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.smartpantrymanager.data.AppDatabase;
 import com.example.smartpantrymanager.data.PantryItem;
 import com.example.smartpantrymanager.data.RecipeSeeder;
-
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AddEditIngredientActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+        Button buttonSuggested = findViewById(R.id.buttonSuggested);
+        buttonSuggested.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SuggestedRecipesActivity.class);
                 startActivity(intent);
             }
         });
