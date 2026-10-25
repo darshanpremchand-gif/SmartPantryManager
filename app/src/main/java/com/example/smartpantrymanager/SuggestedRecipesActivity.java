@@ -13,6 +13,7 @@ import com.example.smartpantrymanager.logic.RecipeMatcher;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import android.content.Intent;
 
 public class SuggestedRecipesActivity extends AppCompatActivity {
 
@@ -35,6 +36,16 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
         recyclerRecipes.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecipeAdapter();
         recyclerRecipes.setAdapter(adapter);
+
+        // when a recipe is tapped, open its detail screen and send the id
+        adapter.setOnRecipeClickListener(new RecipeAdapter.OnRecipeClickListener() {
+            @Override
+            public void onRecipeClick(Recipe recipe) {
+                Intent intent = new Intent(SuggestedRecipesActivity.this, RecipeDetailActivity.class);
+                intent.putExtra("recipeId", recipe.getId());
+                startActivity(intent);
+            }
+        });
     }
 
     // runs every time the screen is shown, so the list is always up to date
