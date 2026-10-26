@@ -1,8 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.SmartPantryManager" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Base.Theme.SmartPantryManager" parent="Theme.Material3.Light.NoActionBar">
+        <!-- main blue used for buttons and highlights -->
+        <item name="colorPrimary">@color/pantry_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/pantry_blue_light</item>
+        <item name="colorOnPrimaryContainer">@color/pantry_blue_dark</item>
+
+        <!-- the selected tab in the bottom bar -->
+        <item name="colorSecondaryContainer">@color/pantry_blue_light</item>
+        <item name="colorOnSecondaryContainer">@color/pantry_blue_dark</item>
+
+        <!-- backgrounds and text -->
+        <item name="android:colorBackground">@color/pantry_blue_light</item>
+        <item name="colorSurface">@color/pantry_card</item>
+        <item name="android:textColorPrimary">@color/pantry_text_dark</item>
+        <item name="android:statusBarColor">@color/pantry_blue_dark</item>
     </style>
 
     <style name="Theme.SmartPantryManager" parent="Base.Theme.SmartPantryManager" />

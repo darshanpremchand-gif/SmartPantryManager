@@ -10,8 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Suggested Recipes"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/pantry_blue_dark"
+        android:paddingTop="24dp"
         android:paddingBottom="12dp" />
 
     <!-- shown only when no recipe matches the pantry -->
@@ -35,6 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@color/pantry_card"
         app:menu="@menu/bottom_nav_menu" />
 
 </LinearLayout>

@@ -76,7 +76,7 @@ public class SuggestedRecipesActivity extends AppCompatActivity {
                         // show the message if nothing matches
                         if (suggested.isEmpty()) {
                             textEmpty.setVisibility(View.VISIBLE);
-                            recyclerRecipes.setVisibility(View.GONE);
+                            recyclerRecipes.setVisibility(View.INVISIBLE);
                         } else {
                             textEmpty.setVisibility(View.GONE);
                             recyclerRecipes.setVisibility(View.VISIBLE);
