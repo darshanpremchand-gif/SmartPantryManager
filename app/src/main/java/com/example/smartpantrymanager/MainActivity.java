@@ -13,6 +13,7 @@ import com.example.smartpantrymanager.data.RecipeSeeder;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import android.content.SharedPreferences;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        NavHelper.setup(this, R.id.nav_pantry);
 
 
         recyclerPantry = findViewById(R.id.recyclerPantry);
@@ -54,16 +56,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        Button buttonSuggested = findViewById(R.id.buttonSuggested);
-        buttonSuggested.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SuggestedRecipesActivity.class);
-                startActivity(intent);
-            }
-        });
-
-
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -76,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // read the saved setting and pass it to the adapter
+        SharedPreferences prefs = getSharedPreferences(SettingsActivity.PREFS_NAME, MODE_PRIVATE);
+        adapter.setShowExpiryAlerts(prefs.getBoolean(SettingsActivity.KEY_EXPIRY_ALERTS, false));
+
         loadItems();
     }
 
